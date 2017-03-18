@@ -62,6 +62,15 @@ def populate_db(file_name):
     conn.commit()
     cur.close()
     conn.close()
+def get_patient_info():
+    patient_id = input('patient_id: ')
+    conn = psycopg2.connect("dbname='{}' user='postgres' host='localhost' password='pgpwd'".format(db_name))
+    cur = conn.cursor()
+    query = "SELECT * FROM {} WHERE {} = '{}'".format(table_name,fields[0],patient_id)
+    cur.execute(query)
+    print(cur.fetchone())
+    cur.close()
+    conn.close()
 def initiate():
     create_db()
     sleep(10)
@@ -69,5 +78,5 @@ def initiate():
 
 
 #initiate()
-populate_db(file1_name)
-
+#populate_db(file1_name)
+get_patient_info()
