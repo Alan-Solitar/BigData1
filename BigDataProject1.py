@@ -27,23 +27,29 @@ current_df.to_csv(file_name + '.csv',index=False)
 #sleep(444)
 graph = Graph()
 #graph.schema.create_uniqueness_constraint("gene", "gene_id")
-#graph.schema.create_index('Gene', 'gene_id')
+
 #tx = graph.begin()
-count =0
-tx= None
 
 
-#graph.run('''lOAD CSV FROM "file:///media/sf_Share_Nyaa/data/BIOGRID-MV-Physical-3.4.144.tab2.csv" AS csvLine
- #       MERGE (a:Gene {gene_id:csvLine[0]}) 
-  #      MERGE (b:Gene {gene_id:csvLine[1]})
-   #     CREATE ((a)-[:INTERACTS_WITH]->(b))
-    #    CREATE ((b)-[:INTERACTS_WITH]->(a))''')
+def create_interaction_graph():
+    try:
+        graph.schema.create_index('Gene', 'gene_id')
+    except:
+        print('Graph is already indexed')
+
+    graph.run('''lOAD CSV FROM "file:///media/sf_Share_Nyaa/data/BIOGRID-MV-Physical-3.4.144.tab2.csv" AS csvLine
+            MERGE (a:Gene {gene_id:csvLine[0]}) 
+            MERGE (b:Gene {gene_id:csvLine[1]})
+            CREATE ((a)-[:INTERACTS_WITH]->(b))
+            CREATE ((b)-[:INTERACTS_WITH]->(a))''')
 #query = 'MATCH (a:gene {gene_id:"{}"})-[*1..5]-(nth_degrees)'
  #   'RETURN DISTINCT nth_degrees'.format(gene_id)
-query = '''start n=node(*)
-match (n)
-return count(n)'''
-print(graph.data(query))
+
+def get_node_count():
+    query = '''start n=node(*)
+    match (n)
+    return count(n)'''
+    print(graph.data(query))
 
 
 #for index,row in current_df.iterrows():
@@ -75,10 +81,10 @@ print(graph.data(query))
      #   CREATE (p)-[:IS_CONNECTED{type:{relationship}}]->(o)''',
      #   name=Person, organization=Organization , relationship = Connection )
 
-def get_nth_degree_genes(gene_id,graph):
-    query = 'MATCH (a:gene {gene_id:"{}"})-[*1..5]-(nth_degrees)'
-    'RETURN DISTINCT nth_degrees'.format(gene_id)
-    query = 'start n=node(*)'
-    'match n'
-    'return count(n)'
-    print(graph.data(query))
+def get_nth_degree_genes(gene,graph):
+    interacting_genes = graph.run('''match (:Gene {gene_id:"6416"})-[:INTERACTS_WITH*..5]->(a:Gene) 
+    return distinct properties(a)''').data()
+    print(len(interacting_genes))
+    
+    #print(graph.data(query))
+get_nth_degree_genes(6416,graph)
