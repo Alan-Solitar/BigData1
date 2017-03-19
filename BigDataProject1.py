@@ -40,8 +40,8 @@ def create_interaction_graph():
     graph.run('''lOAD CSV FROM "file:///media/sf_Share_Nyaa/data/BIOGRID-MV-Physical-3.4.144.tab2.csv" AS csvLine
             MERGE (a:Gene {gene_id:csvLine[0]}) 
             MERGE (b:Gene {gene_id:csvLine[1]})
-            CREATE ((a)-[:INTERACTS_WITH]->(b))
-            CREATE ((b)-[:INTERACTS_WITH]->(a))''')
+            MERGE ((a)-[:INTERACTS_WITH]-(b))
+            ''')
 #query = 'MATCH (a:gene {gene_id:"{}"})-[*1..5]-(nth_degrees)'
  #   'RETURN DISTINCT nth_degrees'.format(gene_id)
 
@@ -81,10 +81,18 @@ def get_node_count():
      #   CREATE (p)-[:IS_CONNECTED{type:{relationship}}]->(o)''',
      #   name=Person, organization=Organization , relationship = Connection )
 
-def get_nth_degree_genes(gene,graph):
-    interacting_genes = graph.run('''match (:Gene {gene_id:"6416"})-[:INTERACTS_WITH*..5]->(a:Gene) 
-    return distinct properties(a)''').data()
-    print(len(interacting_genes))
+def get_nth_degree_genes(gene,graph,n):
+    query = '''match (:Gene {{gene_id:"{}"}})-[:INTERACTS_WITH*..{}]-(a:Gene) 
+    return distinct properties(a)'''
+    query = query.format(gene,n)
+    
+    interacting_genes = graph.run(query).data()
+    genes = [g['properties(a)']['gene_id'] for g in interacting_genes]
+    print(len(genes))
+    sleep(55555)
     
     #print(graph.data(query))
-get_nth_degree_genes(6416,graph)
+#create_interaction_graph()
+n = input('get interacting genes of degree: ')
+get_node_count()
+get_nth_degree_genes(6416,graph,n)
