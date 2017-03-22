@@ -17,10 +17,21 @@ class PatientDataManager():
         self.fields = self.parse_base_file(self.base_file_name)
         if not exists:
             self.initiate()
+    def main_method(self):
+        val = int(input('what do you want do?\n1.Load ROSMAP file\n2. load patient data file\n3.Query for patient information\n'))
+        if val ==1:
+            file_name = input('File Name?: ')
+            self.populate_diagnosis_table(file_name)
+        if val == 2:
+            file_name = input('File Name?: ')
+            self.populate_db(file_name)
+        if val == 3:
+            self.query_for_patient_info()
     def parse_base_file(self,file_name):
         df = pd.read_csv(file_name)
         return list(df.columns.values)
     def get_info(self):
+        print('Entre postgres credentials:')
         return input('db_username: '),input('db_password: ')
     def create_db(self):
         conn_str = "dbname='postgres' user='{}' host='localhost' password='{}'".format(self.user,self.pw)
@@ -49,10 +60,8 @@ class PatientDataManager():
     def populate_db(self,file_name):
         df = pd.read_csv(file_name)
         df.age = df.age.astype(str)
-        df.info()
         tups = df.to_records(index=False)
-        for i,t in enumerate(tups):
-            tups[i] = (t[0],int(t[1]),t[2],t[3])
+        
         conn = psycopg2.connect("dbname='{}' user='postgres' host='localhost' password='pgpwd'".format(self.db_name))
         cur = conn.cursor()
         query = "INSERT INTO {} ({},{},{},{} ) VALUES(%s,%s,%s,%s)".format(self.table_name,self.fields[0],self.fields[1],self.fields[2],self.fields[3])
@@ -98,5 +107,5 @@ class PatientDataManager():
         if info != None:
             print (' '.join([val for val in info]))
 
-pdm = PatientDataManager(False)
-pdm.query_for_patient_info()
+#pdm = PatientDataManager(False)
+#pdm.query_for_patient_info()
